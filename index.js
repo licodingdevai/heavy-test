@@ -1,6 +1,27 @@
 const os = require('os');
+const http = require('http');
 
 const NUM_WORKERS = os.cpus().length;
+const PORT = process.env.PORT || 3000;
+
+// HTTP Server for health checks
+const server = http.createServer((req, res) => {
+  if (req.url === '/' || req.url === '/health' || req.url === '/healthz') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      status: 'ok',
+      uptime: process.uptime(),
+      memory: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + 'MB'
+    }));
+  } else {
+    res.writeHead(404);
+    res.end('Not Found');
+  }
+});
+
+server.listen(PORT, () => {
+  console.log(`Health check server running on port ${PORT}`);
+});
 
 console.log(`CPU Stress Test Starting...`);
 console.log(`CPU Cores: ${NUM_WORKERS}`);
